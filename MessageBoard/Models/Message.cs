@@ -12,6 +12,6 @@ public class Message
 	[StringLength(400)]
 	public string Content { get; set; }
 	[Required]
-	[DataType(DataType.DateTime, ErrorMessage = "PostedOn must be a valid date time.")]
-	public string PostedOn { get; set; }
+	[DataType(DataType.DateTime)]
+	public DateTime PostedOn { get; set; }
 }
