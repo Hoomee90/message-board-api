@@ -4,97 +4,120 @@ using MessageBoard.Models;
 
 namespace MessageBoard.Controllers
 {
-  [Route("api/[controller]")]
-  [ApiController]
-  public class MessagesController : ControllerBase
-  {
-    private readonly MessageBoardContext _context;
+	[Route("api/[controller]")]
+	[ApiController]
+	public class MessagesController : ControllerBase
+	{
+		private readonly MessageBoardContext _context;
 
-    public MessagesController(MessageBoardContext context)
-    {
-      _context = context;
-    }
+		public MessagesController(MessageBoardContext context)
+		{
+			_context = context;
+		}
 
-    // GET: api/Messages
-    [HttpGet]
-    public async Task<ActionResult<IEnumerable<Message>>> GetMessage()
-    {
-      return await _context.Messages.ToListAsync();
-    }
+		// GET: api/Messages
+		[HttpGet]
+		public async Task<ActionResult<IEnumerable<Message>>> GetMessage(string boardId)
+		{
+			IQueryable<Message> query = _context.Messages.AsQueryable();
+			try
+			{
+				query = query.Where(entry => boardId == null || entry.BoardId == int.Parse(boardId));
+			}
+			catch (FormatException)
+			{
+				return BadRequest("Invalid boardId");
+			}
 
-    // GET: api/Messages/5
-    [HttpGet("{id}")]
-    public async Task<ActionResult<Message>> GetMessage(int id)
-    {
-      var message = await _context.Messages.FindAsync(id);
+			return await query.ToListAsync();
+		}
 
-      if (message == null)
-      {
-        return NotFound();
-      }
+		// GET: api/Messages/5
+		[HttpGet("{id}")]
+		public async Task<ActionResult<Message>> GetMessage(int id)
+		{
+			var message = await _context.Messages.FindAsync(id);
 
-      return message;
-    }
+			if (message == null)
+			{
+				return NotFound();
+			}
 
-    // PUT: api/Messages/5
-    [HttpPut("{id}")]
-    public async Task<IActionResult> PutMessage(int id, Message message)
-    {
-      if (id != message.MessageId)
-      {
-        return BadRequest();
-      }
+			return message;
+		}
 
-      _context.Entry(message).State = EntityState.Modified;
+		// PUT: api/Messages/5
+		[HttpPut("{id}")]
+		public async Task<IActionResult> PutMessage(int id, Message message)
+		{
+			if (id != message.MessageId)
+			{
+				return BadRequest();
+			}
 
-      try
-      {
-        await _context.SaveChangesAsync();
-      }
-      catch (DbUpdateConcurrencyException)
-      {
-        if (!MessageExists(id))
-        {
-          return NotFound();
-        }
-        else
-        {
-          throw;
-        }
-      }
+			_context.Entry(message).State = EntityState.Modified;
 
-      return NoContent();
-    }
+			try
+			{
+				await _context.SaveChangesAsync();
+			}
+			catch (DbUpdateConcurrencyException)
+			{
+				if (!MessageExists(id))
+				{
+					return NotFound();
+				}
+				if (!BoardExists(message.BoardId))
+				{
+					return BadRequest("A message must have a valid BoardId");
+				}
+				else
+				{
+					throw;
+				}
+			}
 
-    // POST: api/Messages
-    [HttpPost]
-    public async Task<ActionResult<Message>> PostMessage(Message message)
-    {
-      _context.Messages.Add(message);
-      await _context.SaveChangesAsync();
+			return NoContent();
+		}
 
-      return CreatedAtAction(nameof(GetMessage), new { id = message.MessageId }, message);
-    }
+		// POST: api/Messages
+		[HttpPost]
+		public async Task<ActionResult<Message>> PostMessage(Message message)
+		{
+			if (!BoardExists(message.BoardId))
+			{
+				return BadRequest("A message must have a valid BoardId");
+			}
+			_context.Messages.Add(message);
+			await _context.SaveChangesAsync();
 
-    // DELETE: api/Messages/5
-    [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteMessage(int id)
-    {
-      var message = await _context.Messages.FindAsync(id);
-      if (message == null)
-      {
-        return NotFound();
-      }
+			return CreatedAtAction(nameof(GetMessage), new { id = message.MessageId }, message);
+		}
 
-      _context.Messages.Remove(message);
-      await _context.SaveChangesAsync();
+		// DELETE: api/Messages/5
+		[HttpDelete("{id}")]
+		public async Task<IActionResult> DeleteMessage(int id)
+		{
+			var message = await _context.Messages.FindAsync(id);
+			if (message == null)
+			{
+				return NotFound();
+			}
 
-      return NoContent();
-    }
+			_context.Messages.Remove(message);
+			await _context.SaveChangesAsync();
 
-    private bool MessageExists(int id)
-    {
-      return _context.Messages.Any(e => e.MessageId == id);
-    }
-  }
+			return NoContent();
+		}
+
+		private bool MessageExists(int id)
+		{
+			return _context.Messages.Any(e => e.MessageId == id);
+		}
+
+		private bool BoardExists(int id)
+		{
+			return _context.Boards.Any(e => e.BoardId == id);
+		}
+	}
 }
