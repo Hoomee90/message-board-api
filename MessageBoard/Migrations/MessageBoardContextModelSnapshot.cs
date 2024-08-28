@@ -19,10 +19,34 @@ namespace MessageBoard.Migrations
                 .HasAnnotation("ProductVersion", "6.0.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
+            modelBuilder.Entity("MessageBoard.Models.Board", b =>
+                {
+                    b.Property<int>("BoardId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)");
+
+                    b.HasKey("BoardId");
+
+                    b.ToTable("Boards");
+                });
+
             modelBuilder.Entity("MessageBoard.Models.Message", b =>
                 {
                     b.Property<int>("MessageId")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<int>("BoardId")
                         .HasColumnType("int");
 
                     b.Property<string>("Content")
@@ -40,44 +64,25 @@ namespace MessageBoard.Migrations
 
                     b.HasKey("MessageId");
 
-                    b.ToTable("Messages");
+                    b.HasIndex("BoardId");
 
-                    b.HasData(
-                        new
-                        {
-                            MessageId = 1,
-                            Content = "Woolly Mammoth",
-                            PostedOn = new DateTime(2018, 8, 18, 7, 22, 16, 0, DateTimeKind.Unspecified),
-                            Username = "Matilda"
-                        },
-                        new
-                        {
-                            MessageId = 2,
-                            Content = "Dinosaur",
-                            PostedOn = new DateTime(2018, 8, 18, 0, 22, 16, 0, DateTimeKind.Local),
-                            Username = "Rexie"
-                        },
-                        new
-                        {
-                            MessageId = 3,
-                            Content = "Dinosaur",
-                            PostedOn = new DateTime(2018, 8, 18, 0, 22, 16, 0, DateTimeKind.Local),
-                            Username = "Matilda"
-                        },
-                        new
-                        {
-                            MessageId = 4,
-                            Content = "Shark",
-                            PostedOn = new DateTime(2022, 8, 28, 11, 22, 16, 0, DateTimeKind.Unspecified),
-                            Username = "Pip"
-                        },
-                        new
-                        {
-                            MessageId = 5,
-                            Content = "Dinosaur",
-                            PostedOn = new DateTime(2010, 12, 1, 1, 23, 50, 0, DateTimeKind.Unspecified),
-                            Username = "Bartholomew"
-                        });
+                    b.ToTable("Messages");
+                });
+
+            modelBuilder.Entity("MessageBoard.Models.Message", b =>
+                {
+                    b.HasOne("MessageBoard.Models.Board", "Board")
+                        .WithMany("Messages")
+                        .HasForeignKey("BoardId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Board");
+                });
+
+            modelBuilder.Entity("MessageBoard.Models.Board", b =>
+                {
+                    b.Navigation("Messages");
                 });
 #pragma warning restore 612, 618
         }

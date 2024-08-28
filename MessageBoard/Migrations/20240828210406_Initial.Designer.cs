@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MessageBoard.Migrations
 {
     [DbContext(typeof(MessageBoardContext))]
-    [Migration("20240827220525_ChangePostedOnToDateTime")]
-    partial class ChangePostedOnToDateTime
+    [Migration("20240828210406_Initial")]
+    partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -21,10 +21,34 @@ namespace MessageBoard.Migrations
                 .HasAnnotation("ProductVersion", "6.0.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
+            modelBuilder.Entity("MessageBoard.Models.Board", b =>
+                {
+                    b.Property<int>("BoardId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)");
+
+                    b.HasKey("BoardId");
+
+                    b.ToTable("Boards");
+                });
+
             modelBuilder.Entity("MessageBoard.Models.Message", b =>
                 {
                     b.Property<int>("MessageId")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<int>("BoardId")
                         .HasColumnType("int");
 
                     b.Property<string>("Content")
@@ -42,7 +66,25 @@ namespace MessageBoard.Migrations
 
                     b.HasKey("MessageId");
 
+                    b.HasIndex("BoardId");
+
                     b.ToTable("Messages");
+                });
+
+            modelBuilder.Entity("MessageBoard.Models.Message", b =>
+                {
+                    b.HasOne("MessageBoard.Models.Board", "Board")
+                        .WithMany("Messages")
+                        .HasForeignKey("BoardId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Board");
+                });
+
+            modelBuilder.Entity("MessageBoard.Models.Board", b =>
+                {
+                    b.Navigation("Messages");
                 });
 #pragma warning restore 612, 618
         }
