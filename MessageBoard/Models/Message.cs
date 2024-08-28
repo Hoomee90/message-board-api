@@ -14,6 +14,6 @@ public class Message
 	[Required]
 	[DataType(DataType.DateTime)]
 	public DateTime PostedOn { get; set; }
+	[Required]
 	public int BoardId { get; set; }
-	public Board Board { get; set; }
 }

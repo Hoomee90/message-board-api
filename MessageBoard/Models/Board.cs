@@ -11,5 +11,4 @@ public class Board
 	[Required]
 	[StringLength(100)]
 	public string Description { get; set; }
-	public List<Message> Messages { get; set; }
 }
