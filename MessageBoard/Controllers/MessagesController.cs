@@ -17,16 +17,18 @@ namespace MessageBoard.Controllers
 
 		// GET: api/Messages
 		[HttpGet]
-		public async Task<ActionResult<IEnumerable<Message>>> GetMessage(string boardId)
+		public async Task<ActionResult<IEnumerable<Message>>> GetMessage(string boardId, string startDate, string endDate)
 		{
 			IQueryable<Message> query = _context.Messages.AsQueryable();
 			try
 			{
 				query = query.Where(entry => boardId == null || entry.BoardId == int.Parse(boardId));
+				query = query.Where(entry => startDate == null || entry.PostedOn.CompareTo(DateTime.Parse(startDate)) >= 0);
+				query = query.Where(entry => endDate == null || entry.PostedOn.CompareTo(DateTime.Parse(endDate)) <= 0);
 			}
-			catch (FormatException)
+			catch (Exception)
 			{
-				return BadRequest("Invalid boardId");
+				return BadRequest("Invalid date strings");
 			}
 
 			return await query.ToListAsync();
