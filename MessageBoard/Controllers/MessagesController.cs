@@ -48,11 +48,15 @@ namespace MessageBoard.Controllers
 
 		// PUT: api/Messages/5
 		[HttpPut("{id}")]
-		public async Task<IActionResult> PutMessage(int id, Message message)
+		public async Task<IActionResult> PutMessage(int id, string username, Message message)
 		{
 			if (id != message.MessageId)
 			{
 				return BadRequest();
+			}
+			if (username != message.Username)
+			{
+				return Unauthorized();
 			}
 
 			_context.Entry(message).State = EntityState.Modified;
@@ -96,12 +100,16 @@ namespace MessageBoard.Controllers
 
 		// DELETE: api/Messages/5
 		[HttpDelete("{id}")]
-		public async Task<IActionResult> DeleteMessage(int id)
+		public async Task<IActionResult> DeleteMessage(int id, string username)
 		{
 			var message = await _context.Messages.FindAsync(id);
 			if (message == null)
 			{
 				return NotFound();
+			}
+			if (username != message.Username)
+			{
+				return Unauthorized();
 			}
 
 			_context.Messages.Remove(message);
