@@ -17,14 +17,21 @@ namespace MessageBoard.Controllers
 
 		// GET: api/Messages
 		[HttpGet]
-		public async Task<ActionResult<IEnumerable<Message>>> GetMessage(string boardId, string startDate, string endDate)
+		public async Task<ActionResult<IEnumerable<Message>>> GetMessage(string boardId, string page, string startDate, string endDate)
 		{
 			IQueryable<Message> query = _context.Messages.AsQueryable();
 			try
 			{
-				query = query.Where(entry => boardId == null || entry.BoardId == int.Parse(boardId));
-				query = query.Where(entry => startDate == null || entry.PostedOn.CompareTo(DateTime.Parse(startDate)) >= 0);
-				query = query.Where(entry => endDate == null || entry.PostedOn.CompareTo(DateTime.Parse(endDate)) <= 0);
+				query = query
+					.Where(entry => boardId == null || entry.BoardId == int.Parse(boardId))
+					.Where(entry => startDate == null || entry.PostedOn.CompareTo(DateTime.Parse(startDate)) >= 0)
+					.Where(entry => endDate == null || entry.PostedOn.CompareTo(DateTime.Parse(endDate)) <= 0);
+				if (page != null)
+				{
+					query = query
+						.Skip((int.Parse(page) - 1) * 5)
+						.Take(5);
+				}
 			}
 			catch (Exception)
 			{
